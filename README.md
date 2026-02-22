@@ -1,0 +1,1 @@
+Give your agent as much of your writing (and interviews as possible) and then create an editor that edits and writes like you. You just send it documents and it tracks changes just like you would. It is designed around Google Docs: forward or give access a Google Doc to your agent's email, and it goes in and tracks changes just like you.
