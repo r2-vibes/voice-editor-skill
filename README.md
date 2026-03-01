@@ -1,94 +1,104 @@
 # Voice Editor
 
-Give your agent writing samples (and interviews) so it can learn a writing voice, then edit Google Docs with tracked suggestions and inline comments.
+Train an assistant on your writing voice, then apply edits in Google Docs as **tracked suggestions**.
 
-This skill is designed to be **operator-driven** (you keep control of document content and account access) and **privacy-safe by default** (local scripts, no hard-coded identities, no credential storage in repo).
+## What this does
 
-## Prerequisites
+- Learns your writing patterns from samples
+- Rewrites paragraphs in your style
+- Applies changes in Google Docs as suggestions (accept/reject)
+- Supports inline editorial comments
+
+## What you need
 
 - Node.js 18+
-- Google Docs access through `gog` CLI (already authenticated)
-- Chrome running with remote debugging enabled on port `18800`
-- Target Google Doc open in Chrome
-- Generated edits file at `/tmp/edits.json` (or custom `EDITS_PATH`)
+- `gog` CLI authenticated
+- Google Doc open in Chrome
+- Chrome remote debugging enabled (default port `18800`)
+- An edits file (`edits.json`) containing pairs of:
+  - original text
+  - rewritten text
 
-Expected `edits.json` format:
+Example `edits.json`:
 
 ```json
 [
-  ["find this text", "replace with this text"],
-  ["another paragraph", "rewritten paragraph"]
+  ["old paragraph text", "new paragraph text"],
+  ["another old paragraph", "another rewrite"]
 ]
 ```
 
-## Setup
+## Quick start (5 steps)
+
+1. Install script deps:
 
 ```bash
 cd skills/voice-editor/scripts
 npm install
 ```
 
-## Quickstart
+2. Save edits JSON (default path):
 
-1. Generate paragraph rewrites and save them to `/tmp/edits.json`.
-2. Open the Google Doc in Chrome.
-3. Switch doc mode to **Suggesting**.
+```bash
+mkdir -p ../tmp
+# save to: skills/voice-editor/tmp/edits.json
+```
+
+3. Open your Google Doc in Chrome and switch to **Suggesting** mode.
+
 4. Open **Find and replace** (`Cmd+Shift+H`).
-5. Run preflight:
+
+5. Run preflight, then run batch apply:
 
 ```bash
 DOC_ID=<google_doc_id> npm run preflight
-```
-
-6. If preflight passes hard checks, run:
-
-```bash
 DOC_ID=<google_doc_id> npm run batch-suggest
 ```
 
-## Preflight checks
+## Optional env vars
 
-`npm run preflight` validates:
+- `EDITS_PATH` (default: `skills/voice-editor/tmp/edits.json`)
+- `CDP_PORT` (default: `18800`)
 
-- `gog` is installed and auth appears available
-- Chrome CDP endpoint is reachable on `localhost:18800`
-- edits file exists and has valid JSON pair structure
-- (optional hints) doc tab readiness: suggesting mode + find/replace dialog
-
-Useful flags:
-
-- `--strict` → warnings also fail
-- `--json` → machine-readable output
-
-Examples:
+Example:
 
 ```bash
-DOC_ID=<id> EDITS_PATH=/tmp/edits.json npm run preflight -- --strict
-DOC_ID=<id> npm run preflight -- --json
+DOC_ID=<id> EDITS_PATH=/path/to/edits.json CDP_PORT=18800 npm run preflight -- --strict
 ```
 
-## Common failure modes
+## How to know it worked
 
-- **`Cannot reach Chrome CDP on localhost:18800`**
-  - Relaunch Chrome with `--remote-debugging-port=18800`.
-- **`missing edits file` or `invalid JSON`**
-  - Regenerate `edits.json`; ensure each item is exactly `[find, replace]`.
-- **`Could not connect to target doc tab via CDP`**
-  - Open the exact doc URL in Chrome and keep it active.
-- **Doc readiness warnings**
-  - Switch to Suggesting mode and reopen Find and replace.
+- Terminal shows `OK`/`SKIP` per edit
+- Final line shows success/fail count
+- In Google Docs, changes appear as tracked suggestions
 
-## Safety & privacy notes
+## Common issues
+
+- **CDP connection failed**
+  - Relaunch Chrome with remote debugging on the same port.
+- **No matches found**
+  - Find text must match exactly (including punctuation/case when Match case is enabled).
+- **Doc not ready**
+  - Ensure Suggesting mode + Find and replace dialog are open.
+
+## FAQ (quick)
+
+**Do I need coding skills?**
+- Not really. If you can run 2 commands and copy a doc ID, you can use this.
+
+**Will this edit my doc directly?**
+- It applies edits as tracked suggestions, so you can accept/reject each one.
+
+**Can I test safely first?**
+- Yes. Use the demo file at `skills/voice-editor/tmp/edits.demo.json`.
+
+**How do I set it up fastest?**
+```bash
+cd skills/voice-editor/scripts
+./bootstrap.sh
+```
+
+## Privacy
 
 - No credentials are stored in this repo.
-- No personal account identifiers are hard-coded.
-- Scripts operate only on the currently open browser/doc context you provide.
-
-## Development
-
-Run tests (red/green TDD expected for new logic):
-
-```bash
-cd scripts
-npm test
-```
+- Scripts only act on the doc tab you have open.

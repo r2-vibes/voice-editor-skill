@@ -1,13 +1,11 @@
 #!/usr/bin/env node
 
 const net = require('node:net');
+const path = require('node:path');
 const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 const CDP = require('chrome-remote-interface');
-const {
-  readAndValidateEditsFile,
-  summarize,
-} = require('./preflight-lib');
+const { readAndValidateEditsFile, summarize } = require('./preflight-lib');
 
 const execFileAsync = promisify(execFile);
 
@@ -62,7 +60,7 @@ async function checkGogAuth() {
   }
 }
 
-async function checkCdpPort(port = 18800) {
+async function checkCdpPort(port) {
   return new Promise(resolve => {
     const socket = net.createConnection({ host: '127.0.0.1', port });
     socket.setTimeout(1500);
@@ -84,7 +82,7 @@ async function checkCdpPort(port = 18800) {
         hard: true,
         status: 'fail',
         message: `Cannot reach Chrome CDP on localhost:${port}`,
-        hint: 'Launch Chrome with --remote-debugging-port=18800 and open the target Google Doc.',
+        hint: `Launch Chrome with --remote-debugging-port=${port} and open the target Google Doc.`,
       });
     };
 
@@ -114,7 +112,7 @@ function checkEditsFile(editsPath) {
   };
 }
 
-async function checkDocHints(docId) {
+async function checkDocHints(docId, cdpPort) {
   if (!docId) {
     return {
       id: 'doc.hints',
@@ -128,7 +126,7 @@ async function checkDocHints(docId) {
   let client;
   try {
     client = await CDP({
-      port: 18800,
+      port: cdpPort,
       target: targets => targets.find(t => t.url && t.url.includes(docId)),
     });
   } catch {
@@ -197,14 +195,15 @@ function printResults(results, summary, asJson) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  const editsPath = process.env.EDITS_PATH || '/tmp/edits.json';
+  const editsPath = process.env.EDITS_PATH || path.resolve(__dirname, '../tmp/edits.json');
   const docId = process.env.DOC_ID || '';
+  const cdpPort = Number(process.env.CDP_PORT || 18800);
 
   const results = [];
   results.push(await checkGogAuth());
-  results.push(await checkCdpPort(18800));
+  results.push(await checkCdpPort(cdpPort));
   results.push(checkEditsFile(editsPath));
-  results.push(await checkDocHints(docId));
+  results.push(await checkDocHints(docId, cdpPort));
 
   const summary = summarize(results, { strict: args.strict });
   printResults(results, summary, args.json);
