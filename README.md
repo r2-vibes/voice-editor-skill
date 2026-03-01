@@ -2,6 +2,20 @@
 
 Train an assistant on your writing voice, then apply edits in Google Docs as **tracked suggestions**.
 
+## Assumptions / prerequisites (required)
+
+For this to work immediately after install, your Claw environment must already have:
+
+- A Google account available to the agent
+- Agent is logged in to that Google account in Chrome
+- Agent has permission to **edit** the target Google Doc
+- Agent can receive email (for Google login/verification flows if needed)
+- `gog` CLI installed and authenticated
+- Node.js 18+
+- Chrome with remote debugging enabled (default port `18800`)
+
+If any item above is missing, setup will fail or suggestions will not apply.
+
 ## What this does
 
 - Learns your writing patterns from samples
