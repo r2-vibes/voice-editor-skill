@@ -4,17 +4,17 @@ Train an assistant on your writing voice, then apply edits in Google Docs as **t
 
 ## Assumptions / prerequisites (required)
 
-For this to work immediately after install, your Claw environment must already have:
+For this to work immediately after install:
 
-- A Google account available to the agent
-- Agent is logged in to that Google account in Chrome
-- Agent has permission to **edit** the target Google Doc
-- Agent can receive email (for Google login/verification flows if needed)
-- `gog` CLI installed and authenticated
-- Node.js 18+
-- Chrome with remote debugging enabled (default port `18800`)
+- Your Claw has a Google account
+- Claw is logged in to that Google account in Chrome
+- Claw can edit the target Google Doc
+- Claw can receive email (for login/verification when needed)
 
-If any item above is missing, setup will fail or suggestions will not apply.
+That’s it from a user point of view.
+
+Technical checks (Node + gog) are handled by `scripts/bootstrap.sh` and `npm run preflight`.
+If something is missing, they fail with clear instructions.
 
 ## What this does
 
@@ -25,13 +25,13 @@ If any item above is missing, setup will fail or suggestions will not apply.
 
 ## What you need
 
-- Node.js 18+
-- `gog` CLI authenticated
 - Google Doc open in Chrome
 - Chrome remote debugging enabled (default port `18800`)
 - An edits file (`edits.json`) containing pairs of:
   - original text
   - rewritten text
+
+(Technical dependencies like Node and gog are auto-checked by setup/preflight.)
 
 Example `edits.json`:
 
